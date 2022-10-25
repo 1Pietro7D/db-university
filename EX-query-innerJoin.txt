@@ -41,8 +41,8 @@ ON course_teacher.course_id = courses.id
 INNER JOIN teachers
 ON course_teacher.teacher_id=teachers.id;
 
-/* 6. Selezionare tutti i docenti che insegnano nel Dipartimento di Matematica (54) <- farò finta sia un limite di visualizzazioni */
-SELECT `teachers`.`name` AS `Teachers in dipartment of Math`,  `teachers`.`surname`                           <- /* NON NE VUOLE SAPERE DI CONCATENARE NOME E COGNOME */
+/* 6. Selezionare tutti i docenti che insegnano nel Dipartimento di Matematica (54) <-RISULTATO EFFETTIVO */
+SELECT DISTINCT CONCAT( `teachers`.`name` , " " , `teachers`.`surname` ) AS `Teachers in dipartment of Math`                     
 FROM `departments`
 INNER JOIN `degrees`
 ON `departments`.`id` = `degrees`.`department_id`
@@ -53,11 +53,11 @@ ON `courses`.`id` = `course_teacher`.`course_id`
 INNER JOIN `teachers`
 ON `teachers`.`id` = `course_teacher`.`teacher_id`
 WHERE departments.name LIKE "%MATEMATICA"
-LIMIT 54;
+
 
 /* 7. BONUS: Selezionare per ogni studente quanti tentativi d’esame ha sostenuto per
 superare ciascuno dei suoi esami */
-SELECT COUNT(`exam_student`.`student_id`) AS `total_attempts`, `courses`.`id` AS `course_id`, `students`.`surname`, `students`.`name` 
+SELECT COUNT(`exam_student`.`student_id`) AS `total_attempts`, `courses`.`id` AS `course_id`, CONCAT(`students`.`surname`," ", `students`.`name`) AS `Students`
 FROM `students` 
 INNER JOIN `exam_student` 
 ON `exam_student`.`student_id` = `students`.`id` 
@@ -65,4 +65,6 @@ INNER JOIN `exams`
 ON `exam_student`.`exam_id` = `exams`.`id` 
 INNER JOIN `courses` 
 ON `courses`.`id` = `exams`.`course_id` 
-GROUP BY `students`.`id`, `courses`.`id`    /* stesso studente, stesso corso */
+GROUP BY  `courses`.`id`, `Students`      /* USO CORRETTO VUOLE CHE SI METTANO TUTTI GLI ELEMENTI NEL SELECT, potevo anche mettere solo il nome escluso dal cognome e raggruppare solo per nome */
+HAVING MAX(`exam_student`.`vote`) >= 18
+ORDER BY `Students`
